@@ -1,0 +1,152 @@
+1) create new project 
+	composer  create-project laravel/laravel socialite
+2) create laravel auth
+	composer required laravel/ui --dev
+	php artisan ui vue --auth
+	npm install
+	npm run dev
+	php artisan serve
+3) make extra button in login page
+		<div class="form-group row mb-0">
+            <a href="" class="btn btn-danger col-md-8 offset-md-2 mb-2">{{ __('Login with Google') }}</a>
+            <a href="" class="btn btn-primary col-md-8 offset-md-2 mb-2">{{ __('Login with Facebook') }}</a>
+            <a href="" class="btn btn-dark col-md-8 offset-md-2 mb-2">{{ __('Login with Github') }}</a>
+        </div>
+4) install socialite in project
+		composer require laravel/socialite
+5) we will login with google,facebook, github for add following code in config->service.php
+	
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => 'http://example.com/callback-url',
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => 'http://example.com/callback-url',
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => 'http://example.com/callback-url',
+    ],
+
+6) makeing route for google, facebook,github login
+
+//google login
+Route::get('/login/google', [App\Http\Controllers\LoginController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('/login/google/callback', [App\Http\Controllers\LoginController::class, 'handleGoogleCallback']);
+
+//facebook login
+Route::get('/login/facebook', [App\Http\Controllers\LoginController::class, 'redirectToFacebook'])->name('login.facebook');
+Route::get('/login/facebook/callback', [App\Http\Controllers\LoginController::class, 'handleFacebookCallback']);
+
+//github login
+Route::get('/login/github', [App\Http\Controllers\LoginController::class, 'redirectToGithub'])->name('login.github');
+Route::get('/login/github/callback', [App\Http\Controllers\LoginController::class, 'handleGithubCallback']);
+
+7) put url to login button
+	<a href="{{ route('login.google') }}" class="btn btn-danger col-md-8 offset-md-2 mb-2">{{ __('Login with Google') }}</a>
+    <a href="{{ route('login.facebook') }}" class="btn btn-primary col-md-8 offset-md-2 mb-2">{{ __('Login with Facebook') }}</a>
+    <a href="{{ route('login.github') }}" class="btn btn-dark col-md-8 offset-md-2 mb-2">{{ __('Login with Github') }}</a>
+
+8) put id and secret variable for each app in .env file
+	
+	GOOGLE_CLIENT_ID = ""
+	GOOGLE_CLIENT_SECRET =""
+
+	FACEBOOK_CLIENT_ID=""
+	FACEBOOK_CLIENT_SECRET=""
+
+	GITHUB_CLIENT_ID=""
+	GITHUB_CLIENT_SECRET="
+
+9) change redirect url for each app in config->service.php
+	'redirect' => 'http://localhost/socialite/public/login/google/callback',
+	'redirect' => 'http://localhost/socialite/public/login/facebook/callback',
+	'redirect' => 'http://localhost/socialite/public/login/github/callback',
+
+add following line of code in config->app.php
+'Socialite' => Laravel\Socialite\Facades\Socialite::class,
+
+run command in cmd
+php artisan config:clear
+
+10) add Following code in LoginController
+	use Socialite;
+
+	//for google login
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+    // Google callback
+    public function handleGoogleCallback()
+    {
+        $user = Socialite::driver('google')->user();
+        // $user->token;
+    }
+
+    
+    //for facebook login
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')->redirect();
+    }
+
+    // Facebook callback
+    public function handleFacebookCallback()
+    {
+        $user = Socialite::driver('facebook')->user();
+        // $user->token;
+    }
+
+
+    //for github login
+    public function redirectToGithub()
+    {
+        return Socialite::driver('github')->redirect();
+    }
+    // Github callback
+    public function handleGithubCallback()
+    {
+        $user = Socialite::driver('github')->user();
+        // $user->token;
+    }
+
+11) First create app for google login
+	Open in bowser Google Developers Console
+	https://console.developers.google.com
+
+	then click on create project and then enter your project name and press create button
+	after create project click on create candidate and select OAuth2.0 client Id
+	fill following filed 
+		* select Application type (web application)
+		* Name 
+		* add redirect url ((  copy url from config->service.php file google => [ 'redirect' => 'http://localhost/socialite/public/login/google/callback' ] )) and paste in textfeild. 
+	then hit create
+
+	page redirect to Oauth consent screen and and select external radio button and click submit button
+
+	then genrate client id and secret key cpy and paste in .env file ans save
+
+12)  Now create app for facebook
+	-- open Facebook devloper console
+	-- click on create new app
+		select your need why u are do this (build connect experiences) and continues
+	-- enter app display name and click create button your application in created 
+	-- now go to setting -> basic --> select your application and get application id and app secret copy paste in .env file
+
+13) same as Github
+
+14) Add extra feild in user table 
+	$table->string('provider_id')->nullable();
+	then migrate_database
+
+15) will create new method for create user and existing user
+
+
+
